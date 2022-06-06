@@ -248,11 +248,13 @@ func (p *PDFBox) Execute(ctx context.Context, command string, args ...string) er
 		local_args = append(local_args, a)
 	}
 
+	// fmt.Println("DEBUG", p.java, local_args)
+
 	cmd := exec.CommandContext(ctx, p.java, local_args...)
-	err := cmd.Run()
+	out, err := cmd.CombinedOutput()
 
 	if err != nil {
-		return fmt.Errorf("Failed to execute %s, %w", command, err)
+		return fmt.Errorf("Failed to execute %s, %w (%s)", command, err, string(out))
 	}
 
 	return nil
