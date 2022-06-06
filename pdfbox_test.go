@@ -18,10 +18,25 @@ func TestPDFBox(t *testing.T) {
 	// create PDF from text
 
 	// extract text from PDF
-	
+
 	err = p.Close()
 
 	if err != nil {
 		t.Fatalf("Failed to close PDFBox, %v", err)
 	}
+}
+
+func TestPDFBoxExecute(t *testing.T) {
+
+	t.Skip()
+}
+
+func TestPDFBoxExecuteWithReader(t *testing.T) {
+
+	t.Skip()
+}
+
+func TestPDFBoxExecuteWithWriter(t *testing.T) {
+
+	t.Skip()
 }
