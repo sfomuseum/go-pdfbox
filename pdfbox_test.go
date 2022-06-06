@@ -17,15 +17,7 @@ func TestPDFBox(t *testing.T) {
 		t.Fatalf("Failed to create PDFBox, %v", err)
 	}
 
-	// create PDF from text
-
-	// extract text from PDF
-
-	err = p.Close()
-
-	if err != nil {
-		t.Fatalf("Failed to close PDFBox, %v", err)
-	}
+	// Create PDF from text
 
 	tmp_txt, err := ioutil.TempFile("", "pdfbox-testing")
 
@@ -47,8 +39,6 @@ func TestPDFBox(t *testing.T) {
 		t.Fatalf("Failed to close text tempfile, %v", err)
 	}
 
-	//
-
 	tmp_pdf, err := ioutil.TempFile("", "pdfbox-testing")
 
 	if err != nil {
@@ -68,4 +58,15 @@ func TestPDFBox(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to convert text to PDF, %v", err)
 	}
+
+	// Extract text from PDF
+
+	// Clean up PDFBox
+
+	err = p.Close()
+
+	if err != nil {
+		t.Fatalf("Failed to close PDFBox, %v", err)
+	}
+
 }
