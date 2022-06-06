@@ -11,10 +11,14 @@ import (
 	"os/exec"
 )
 
+const READER string = "{READER}"
+
+const WRITER string = "{WRITER}"
+
 // type PDFBox is a struct for executing `pdfbox` commands.
 type PDFBox struct {
 	// The path to the locally installed Java binary.
-	java    string
+	java string
 	// The path to the temporary pdfbox jar file used by `PDFBox`
 	jarfile string
 }
@@ -118,7 +122,20 @@ func (p *PDFBox) ExecuteWithReader(ctx context.Context, r io.Reader, command str
 		return fmt.Errorf("Failed to close tempfile for reader, %w", err)
 	}
 
-	args = append(args, tmpfile_r.Name())
+	set_reader := false
+
+	for idx, a := range args {
+
+		if a == READER {
+			args[idx] = tmpfile_r.Name()
+			set_reader = true
+			break
+		}
+	}
+
+	if !set_reader {
+		return fmt.Errorf("Failed to set reader path")
+	}
 
 	err = p.Execute(ctx, command, args...)
 
@@ -166,8 +183,32 @@ func (p *PDFBox) ExecuteWithReaderAndWriter(ctx context.Context, r io.Reader, wr
 		return fmt.Errorf("Failed to close tempfile for writer, %w", err)
 	}
 
-	args = append(args, tmpfile_r.Name())
-	args = append(args, tmpfile_wr.Name())
+	set_reader := false
+	set_writer := false
+
+	for idx, a := range args {
+
+		if a == READER {
+			args[idx] = tmpfile_r.Name()
+			set_reader = true
+			break
+		}
+
+		if a == WRITER {
+			args[idx] = tmpfile_wr.Name()
+			set_writer = true
+			break
+		}
+
+	}
+
+	if !set_reader {
+		return fmt.Errorf("Failed to set reader path")
+	}
+
+	if !set_writer {
+		return fmt.Errorf("Failed to set writer path")
+	}
 
 	err = p.Execute(ctx, command, args...)
 
