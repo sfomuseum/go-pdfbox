@@ -1,6 +1,8 @@
 package pdfbox
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"io/ioutil"
 	"os"
@@ -17,6 +19,10 @@ func TestPDFBox(t *testing.T) {
 		t.Fatalf("Failed to create PDFBox, %v", err)
 	}
 
+	// Some "content"
+
+	hello_world := []byte("Hello world")
+
 	// Create PDF from text
 
 	tmp_txt, err := ioutil.TempFile("", "pdfbox-testing")
@@ -27,7 +33,7 @@ func TestPDFBox(t *testing.T) {
 
 	defer os.Remove(tmp_txt.Name())
 
-	_, err = tmp_txt.Write([]byte("Hello world"))
+	_, err = tmp_txt.Write(hello_world)
 
 	if err != nil {
 		t.Fatalf("Failed to write text tempfile, %v", err)
@@ -60,6 +66,32 @@ func TestPDFBox(t *testing.T) {
 	}
 
 	// Extract text from PDF
+
+	r, err := os.Open(tmp_pdf.Name())
+
+	if err != nil {
+		t.Fatalf("Failed to open %s, %v", tmp_pdf.Name(), err)
+	}
+
+	defer r.Close()
+
+	var buf bytes.Buffer
+	wr := bufio.NewWriter(&buf)
+
+	err = p.ExecuteWithReaderAndWriter(ctx, r, wr, "ExtractText", READER, WRITER)
+
+	if err != nil {
+		t.Fatalf("Failed to extract text, %v", err)
+	}
+
+	wr.Flush()
+
+	body := buf.Bytes()
+	body = bytes.TrimSpace(body)
+
+	if !bytes.Equal(body, hello_world) {
+		t.Fatalf("Unexpected text extracted from PDF file: '%s'", string(body))
+	}
 
 	// Clean up PDFBox
 

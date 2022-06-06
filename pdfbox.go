@@ -11,8 +11,10 @@ import (
 	"os/exec"
 )
 
+// READER is a placeholder string for temporary input files (to pdfbox) created by `io.Reader` instances.
 const READER string = "{READER}"
 
+// WRITER is a placeholder string for temporary output files (to pdfbox) created by `io.Writer` instances.
 const WRITER string = "{WRITER}"
 
 // type PDFBox is a struct for executing `pdfbox` commands.
@@ -100,6 +102,8 @@ func (p *PDFBox) Close() error {
 }
 
 // ExecuteWithReader() invokes pdfbox using 'command' and 'args' and the value of 'r' (written to a temporary file) as its input.
+// 'args' is the list of arguments that are passed to 'command' where the path of the input file (to pdfbox) should be replaced by
+// "{READER}" or `pdfbox.READER`. This value will be replaced by the temporary file created using 'r'.
 func (p *PDFBox) ExecuteWithReader(ctx context.Context, r io.Reader, command string, args ...string) error {
 
 	tmpfile_r, err := ioutil.TempFile("", "pdfbox")
@@ -146,7 +150,10 @@ func (p *PDFBox) ExecuteWithReader(ctx context.Context, r io.Reader, command str
 	return nil
 }
 
-// ExecuteWithReaderAndWrite() invokes pdfbox using 'command' and 'args' and the value of 'r' (written to a temporary file) as its input, writing the final output to 'wr'.
+// ExecuteWithReaderAndWrite() invokes pdfbox using 'command' and 'args' and the value of 'r' (written to a temporary file) as its input, writing
+// the final output to 'wr'. 'args' is the list of arguments that are passed to 'command' where the path of the input and output files (to pdfbox)
+// should be replaced by "{READER}" or `pdfbox.READER` and "{WRITER}" or `pdfbox.WRITER` respectively. These values will be replaced by the temporary
+// files created using 'r' and 'wr'.
 func (p *PDFBox) ExecuteWithReaderAndWriter(ctx context.Context, r io.Reader, wr io.Writer, command string, args ...string) error {
 
 	tmpfile_r, err := ioutil.TempFile("", "pdfbox")
@@ -177,7 +184,7 @@ func (p *PDFBox) ExecuteWithReaderAndWriter(ctx context.Context, r io.Reader, wr
 
 	defer os.Remove(tmpfile_wr.Name())
 
-	err = tmpfile_r.Close()
+	err = tmpfile_wr.Close()
 
 	if err != nil {
 		return fmt.Errorf("Failed to close tempfile for writer, %w", err)
@@ -191,15 +198,16 @@ func (p *PDFBox) ExecuteWithReaderAndWriter(ctx context.Context, r io.Reader, wr
 		if a == READER {
 			args[idx] = tmpfile_r.Name()
 			set_reader = true
-			break
 		}
 
 		if a == WRITER {
 			args[idx] = tmpfile_wr.Name()
 			set_writer = true
-			break
 		}
 
+		if set_reader && set_writer {
+			break
+		}
 	}
 
 	if !set_reader {
@@ -231,7 +239,8 @@ func (p *PDFBox) ExecuteWithReaderAndWriter(ctx context.Context, r io.Reader, wr
 	return nil
 }
 
-// Execute() invokes pdfbox using 'command' and 'args' as the command input.
+// Execute() invokes pdfbox using 'command' and 'args' as the command input. 'args' is the list of arguments
+// that are passed to 'command'.
 func (p *PDFBox) Execute(ctx context.Context, command string, args ...string) error {
 
 	if len(args) == 0 {
@@ -247,8 +256,6 @@ func (p *PDFBox) Execute(ctx context.Context, command string, args ...string) er
 	for _, a := range args {
 		local_args = append(local_args, a)
 	}
-
-	// fmt.Println("DEBUG", p.java, local_args)
 
 	cmd := exec.CommandContext(ctx, p.java, local_args...)
 	out, err := cmd.CombinedOutput()
