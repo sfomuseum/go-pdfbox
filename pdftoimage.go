@@ -12,11 +12,13 @@ import (
 	"strings"
 )
 
-type PDFToImageCallback func(context.Context, string, string, io.Reader) error
+// type PDFToImageCallback is a callback function invoked by the PDFToImage method. It passes the path and an
+// `io.Reader` instance for each image produced by the PDFToImage method.
+type PDFToImageCallback func(context.Context, string, io.Reader) error
 
-func PDFToImage(ctx context.Context, pdfb *PDFBox, uri string, r io.Reader, start_page int, end_page int, cb PDFToImageCallback) error {
-
-	// Note the '.pdf' suffix - PDFToImage is sad without it...
+// PDFToImage() is an utility method for invoking the pdfbox `PDFToImage` tool for a file derived from 'r'. This method only
+// exposes the "-startPage" and "-endPage" parameters. Resultant images are passed to 'cb' as `io.Reader` instances.
+func PDFToImage(ctx context.Context, pdfb *PDFBox, r io.Reader, start_page int, end_page int, cb PDFToImageCallback) error {
 
 	tmpfile_r, err := ioutil.TempFile("", "pdfbox-images.*.pdf")
 
@@ -46,7 +48,7 @@ func PDFToImage(ctx context.Context, pdfb *PDFBox, uri string, r io.Reader, star
 
 	defer os.RemoveAll(tmpdir)
 
-	fname := filepath.Base(uri)
+	fname := filepath.Base(tmpfile_r.Name())
 	ext := filepath.Ext(fname)
 
 	prefix := strings.Replace(fname, ext, "-", 1)
@@ -58,7 +60,7 @@ func PDFToImage(ctx context.Context, pdfb *PDFBox, uri string, r io.Reader, star
 	err = pdfb.Execute(ctx, "PDFToImage", "-startPage", str_start, "-endPage", str_end, "-outputPrefix", abs_prefix, tmpfile_r.Name())
 
 	if err != nil {
-		return fmt.Errorf("Failed to extract images for '%s', %w", uri, err)
+		return fmt.Errorf("Failed to extract images, %w", err)
 	}
 
 	tmpfs := os.DirFS(tmpdir)
@@ -77,7 +79,7 @@ func PDFToImage(ctx context.Context, pdfb *PDFBox, uri string, r io.Reader, star
 
 		defer r.Close()
 
-		err = cb(ctx, uri, path, r)
+		err = cb(ctx, path, r)
 
 		if err != nil {
 			return fmt.Errorf("Image callback for %s failed, %w", path, err)
