@@ -106,7 +106,7 @@ func (p *PDFBox) Close() error {
 // "{READER}" or `pdfbox.READER`. This value will be replaced by the temporary file created using 'r'.
 func (p *PDFBox) ExecuteWithReader(ctx context.Context, r io.Reader, command string, args ...string) error {
 
-	tmpfile_r, err := ioutil.TempFile("", "pdfbox")
+	tmpfile_r, err := ioutil.TempFile("", "pdfbox.*.pdf")
 
 	if err != nil {
 		return fmt.Errorf("Failed to create tempfile for reader, %w", err)
@@ -156,7 +156,7 @@ func (p *PDFBox) ExecuteWithReader(ctx context.Context, r io.Reader, command str
 // files created using 'r' and 'wr'.
 func (p *PDFBox) ExecuteWithReaderAndWriter(ctx context.Context, r io.Reader, wr io.Writer, command string, args ...string) error {
 
-	tmpfile_r, err := ioutil.TempFile("", "pdfbox")
+	tmpfile_r, err := ioutil.TempFile("", "pdfbox.*.pdf")
 
 	if err != nil {
 		return fmt.Errorf("Failed to create tempfile for reader, %w", err)
