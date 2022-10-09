@@ -26,7 +26,7 @@ func main() {
 
      ctx := context.Background()
      p, _ := pdfbox.New(ctx, "pdfbox://")
-     o.Execute(ctx, "ExtractText", "example.pdf", "example.txt")
+     p.Execute(ctx, "ExtractText", "example.pdf", "example.txt")
 }     
 ```
 
