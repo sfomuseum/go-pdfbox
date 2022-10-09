@@ -52,7 +52,7 @@ func main() {
 
      p, _ := pdfbox.New(ctx, "pdfbox://")
      
-     o.ExecuteWithReaderAndWriter(ctx, r, wr, "ExtractText", pdfbox.READER, pdfbox.WRITER)
+     p.ExecuteWithReaderAndWriter(ctx, r, wr, "ExtractText", pdfbox.READER, pdfbox.WRITER)
 }     
 ```
 
